@@ -1,0 +1,404 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/alittlenerdy/ads-pulse/schema.json",
+  "title": "Ads Pulse response",
+  "description": "What GET <endpoint> must return (Authorization: Bearer <token>). Any server that returns this shape works with the app. A number that could not be read is null with the reason in error, never 0.",
+  "type": "object",
+  "required": [
+    "generatedAt",
+    "cacheTtlSec",
+    "cached",
+    "totals",
+    "accounts"
+  ],
+  "properties": {
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "cacheTtlSec": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "cached": {
+      "type": "boolean"
+    },
+    "totals": {
+      "type": "object",
+      "required": [
+        "todaySpend",
+        "last7Spend",
+        "accountsRead",
+        "accountsTotal",
+        "redFlags"
+      ],
+      "properties": {
+        "todaySpend": {
+          "type": "number"
+        },
+        "last7Spend": {
+          "type": "number"
+        },
+        "accountsRead": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "accountsTotal": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "redFlags": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "accounts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/account"
+      }
+    }
+  },
+  "$defs": {
+    "metric": {
+      "type": "object",
+      "required": [
+        "spend",
+        "clicks",
+        "impressions",
+        "conversions",
+        "costPerConversion"
+      ],
+      "properties": {
+        "spend": {
+          "type": "number",
+          "description": "Spend in the account currency, major units"
+        },
+        "clicks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "impressions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "conversions": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "null when the platform gives no conversion count"
+        },
+        "costPerConversion": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "spend / conversions, null when conversions is 0 or null"
+        }
+      }
+    },
+    "trendPoint": {
+      "type": "object",
+      "required": [
+        "date",
+        "spend",
+        "clicks",
+        "impressions",
+        "conversions"
+      ],
+      "properties": {
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "spend": {
+          "type": "number"
+        },
+        "clicks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "impressions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "conversions": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      }
+    },
+    "flag": {
+      "type": "object",
+      "required": [
+        "level",
+        "code",
+        "message"
+      ],
+      "properties": {
+        "level": {
+          "enum": [
+            "red",
+            "amber"
+          ]
+        },
+        "code": {
+          "enum": [
+            "over_pace",
+            "over_budget",
+            "zero_impressions",
+            "disapproved_ads",
+            "read_failed"
+          ]
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "campaign": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "status",
+        "servingStatus",
+        "dailyBudget",
+        "today",
+        "last7",
+        "disapprovedAds"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "description": "Platform status, uppercased: ENABLED, PAUSED, RUNNING, ..."
+        },
+        "servingStatus": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "e.g. SERVING, PENDING, ENDED, RUNNING"
+        },
+        "dailyBudget": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "today": {
+          "$ref": "#/$defs/metric"
+        },
+        "last7": {
+          "$ref": "#/$defs/metric"
+        },
+        "disapprovedAds": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "account": {
+      "type": "object",
+      "required": [
+        "id",
+        "platform",
+        "name",
+        "accountRef",
+        "timeZone",
+        "currency",
+        "status",
+        "error",
+        "todayDate",
+        "last7Start",
+        "today",
+        "last7",
+        "dailyBudget",
+        "pace",
+        "lastLeadAt",
+        "lastLeadBasis",
+        "campaigns",
+        "flags",
+        "readAt",
+        "note"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "platform": {
+          "enum": [
+            "google_ads",
+            "google_lsa",
+            "apple_ads",
+            "chatgpt_ads"
+          ],
+          "description": "Drives labels only (conv / leads / installs); add your own value and the app shows it as conv"
+        },
+        "name": {
+          "type": "string"
+        },
+        "accountRef": {
+          "type": "string"
+        },
+        "timeZone": {
+          "type": "string",
+          "description": "IANA zone the account's 'today' is measured in"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "ok",
+            "partial",
+            "error",
+            "no_api",
+            "not_configured"
+          ]
+        },
+        "error": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "todayDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "last7Start": {
+          "type": "string",
+          "format": "date",
+          "description": "First day of the 7 days ending today, inclusive"
+        },
+        "today": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/metric"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "last7": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/metric"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "trend": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/trendPoint"
+          },
+          "description": "Optional. 7 days oldest first, zero days included"
+        },
+        "dailyBudget": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Sum of enabled campaigns' daily budgets"
+        },
+        "pace": {
+          "type": "object",
+          "required": [
+            "dayElapsed",
+            "expectedByNow",
+            "ratio"
+          ],
+          "properties": {
+            "dayElapsed": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "expectedByNow": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "ratio": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "today.spend / (dailyBudget * dayElapsed)"
+            }
+          }
+        },
+        "lastLeadAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "ISO instant, or a bare YYYY-MM-DD date when only the day is known"
+        },
+        "lastLeadBasis": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "campaigns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/campaign"
+          }
+        },
+        "flags": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/flag"
+          }
+        },
+        "readAt": {
+          "type": "object",
+          "required": [
+            "metrics",
+            "lastLead"
+          ],
+          "properties": {
+            "metrics": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "lastLead": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}

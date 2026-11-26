@@ -1,0 +1,21 @@
+{
+  "name": "ads-pulse-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Reference server for Ads Pulse: one JSON endpoint for your Google Ads, Local Services, Apple Ads and ChatGPT Ads accounts.",
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "tsx src/server.ts",
+    "dev": "tsx watch src/server.ts",
+    "test": "node --import tsx --test \"src/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "tsx": "^4.19.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2"
+  }
+}
